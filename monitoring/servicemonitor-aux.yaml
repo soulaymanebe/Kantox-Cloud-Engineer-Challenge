@@ -1,0 +1,18 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: aux-service-healthcheck
+  namespace: monitoring 
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: aux-service
+  namespaceSelector:
+    matchNames:
+    - aux-service
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s

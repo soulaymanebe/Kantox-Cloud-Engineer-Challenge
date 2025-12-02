@@ -1,7 +1,6 @@
-from flask import Flask, jsonify
-from prometheus_flask_exporter import PrometheusMetrics
-import boto3
-import os
+from flask import Flask, jsonify, Response
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry, multiprocess
+import boto3, os
 
 VERSION = os.environ.get("AUX_VERSION", "0.0.1")
 REGION = os.environ.get("AWS_REGION", "eu-west-2")
@@ -10,7 +9,13 @@ app = Flask(__name__)
 s3 = boto3.client('s3')
 ssm = boto3.client('ssm', region_name=REGION)
 
-metrics = PrometheusMetrics(app)
+@app.route("/metrics")
+def expose_metrics():
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+
+@app.route("/healthz")
+def healthz():
+    return "OK", 200
 
 @app.route("/buckets")
 def list_buckets():

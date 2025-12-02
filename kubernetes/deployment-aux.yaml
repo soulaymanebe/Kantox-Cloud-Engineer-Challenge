@@ -42,6 +42,8 @@ kind: Service
 metadata:
   name: aux-service
   namespace: aux-service
+  labels:
+    app: aux-service
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "5000"
@@ -51,6 +53,7 @@ spec:
   selector:
     app: aux-service
   ports:
-  - port: 5000
+  - name: http
+    port: 5000
     targetPort: 5000
     nodePort: 30001

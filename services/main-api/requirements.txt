@@ -2,4 +2,4 @@ flask
 boto3
 gunicorn
 requests
-prometheus-flask-exporter
+prometheus-client

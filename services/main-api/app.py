@@ -1,14 +1,19 @@
-from flask import Flask, jsonify
-from prometheus_flask_exporter import PrometheusMetrics
-import requests
-import os
+from flask import Flask, jsonify,Response
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry, multiprocess
+import requests, os
 
 VERSION = os.environ.get("MAIN_VERSION", "0.0.1")
 AUX_URL = os.environ.get("AUX_URL", "http://aux-service.aux-service.svc.clusterequest.local:5000")
 
 app = Flask(__name__)
 
-metrics = PrometheusMetrics(app)
+@app.route("/metrics")
+def expose_metrics():
+    return Response(generate_latest(), mimetype=CONTENT_TYPE_LATEST)
+
+@app.route("/healthz")
+def healthz():
+    return "OK", 200
 
 @app.route("/buckets")
 def buckets():

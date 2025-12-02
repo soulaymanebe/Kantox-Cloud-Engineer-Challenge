@@ -44,6 +44,8 @@ kind: Service
 metadata:
   name: main-api
   namespace: main-api
+  labels:
+    app: main-api
   annotations:
     prometheus.io/scrape: "true"
     prometheus.io/port: "6000"
@@ -53,6 +55,7 @@ spec:
   selector:
     app: main-api
   ports:
-  - port: 6000
+  - name: http
+    port: 6000
     targetPort: 6000
     nodePort: 30002
