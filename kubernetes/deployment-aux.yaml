@@ -17,7 +17,7 @@ spec:
         - name: ecr-creds
       containers:
       - name: aux-service
-        image: 989419672395.dkr.ecr.eu-west-2.amazonaws.com/kantox/challenge:aux-service-latest
+        image: 989419672395.dkr.ecr.eu-west-2.amazonaws.com/kantox/challenge:aux-service-f6b7115
         imagePullPolicy: Always
         env:
         - name: AUX_VERSION
