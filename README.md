@@ -11,6 +11,7 @@ This project demonstrates a complete cloud-native architecture featuring two Pyt
 - [CI/CD Pipeline](#cicd-pipeline)
 - [Kubernetes Deployment](#kubernetes-deployment)
 - [API Testing Guide](#api-testing-guide)
+- [Monitoring](#monitoring)
 
 ---
 
@@ -357,3 +358,7 @@ curl http://<node-ip>:30002/param/challenge/kantox
 - **Argo CD** for GitOps automation
 - **k3s** for lightweight Kubernetes
 - **AWS** for cloud infrastructure
+
+---
+
+## Monitoring

@@ -17,7 +17,7 @@ spec:
         - name: ecr-creds
       containers:
       - name: main-api
-        image: 123456789012.dkr.ecr.eu-west-2.amazonaws.com/main-api:latest
+        image: 989419672395.dkr.ecr.eu-west-2.amazonaws.com/kantox/challenge:main-api-latest
         imagePullPolicy: Always
         env:
         - name: MAIN_VERSION
