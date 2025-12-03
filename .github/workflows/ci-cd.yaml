@@ -76,8 +76,8 @@ jobs:
       env:
         SHA: ${{ needs.build-and-push.outputs.sha }}
       run: |
-        sed -i "s#image: .*aux-service.*#image: ${{ secrets.AWS_ECR_URI }}:aux-service-$SHA#g" kubernetes/deployment-aux.yaml
-        sed -i "s#image: .*main-api.*#image: ${{ secrets.AWS_ECR_URI }}:main-api-$SHA#g" kubernetes/deployment-main.yaml
+        sed -i "s#image: .*aux-service.*#image: ${{ secrets.AWS_ECR_URI }}:aux-service-$SHA#g" kubernetes/aux-service/deployment.yaml
+        sed -i "s#image: .*main-api.*#image: ${{ secrets.AWS_ECR_URI }}:main-api-$SHA#g" kubernetes/main-api/deployment.yaml
 
     - name: Commit manifest updates
       run: |
@@ -87,7 +87,7 @@ jobs:
         if git diff --quiet; then
           echo "No changes to commit"
         else
-          git add kubernetes/deployment-aux.yaml kubernetes/deployment-main.yaml
+          git add kubernetes/aux-service/deployment.yaml kubernetes/main-api/deployment.yaml
           git commit -m "Update image tags to SHA ${{ steps.vars.outputs.sha }}"
           git push
         fi
