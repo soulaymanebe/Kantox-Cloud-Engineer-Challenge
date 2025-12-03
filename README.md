@@ -343,6 +343,225 @@ curl http://<node-ip>:30002/param/challenge/kantox
 
 ---
 
+## Monitoring
+
+The monitoring stack uses Prometheus for metrics collection and Grafana for visualization, deployed via the `kube-prometheus-stack` Helm chart.
+
+### Monitoring Architecture
+
+```
+┌──────────────────────────────────────────────────┐
+│              Prometheus                          │
+│         (Metrics Collection)                     │
+│   • Scrapes /metrics endpoints                   │
+│   • Stores time-series data                      │
+│   • Exposed on NodePort 31000                    │
+└────────────────┬─────────────────────────────────┘
+                 │
+         ┌───────┴────────┐
+         │                │
+    ┌────▼─────┐    ┌────▼──────┐
+    │main-api  │    │aux-service│
+    │ :30002   │    │  :30001   │
+    └──────────┘    └───────────┘
+                 │
+                 ▼
+┌──────────────────────────────────────────────────┐
+│               Grafana                            │
+│         (Visualization)                          │
+│   • Real-time dashboards                         │
+│   • Service health monitoring                    │
+│   • Exposed on NodePort 30000                    │
+└──────────────────────────────────────────────────┘
+```
+
+### Setup Instructions
+
+#### 1. Install Helm
+
+#### 2. Create Helm Values File
+
+- Configure Grafana Admin Password
+
+```bash
+export ENCODED_PASS="YourSecurePassword"
+kubectl create secret generic grafana-admin-password \
+  --from-literal=password=$ENCODED_PASS \
+  --namespace monitoring
+```
+
+- Create `monitoring/values.yaml`:
+
+```yaml
+prometheus:
+  service:
+    type: NodePort
+    nodePort: 31000
+
+grafana:
+  service:
+    type: NodePort
+    nodePort: 30000
+
+  persistence:
+    enabled: true
+    storageClassName: local-path
+    size: 5Gi
+
+  admin:
+    existingSecret: grafana-admin-password
+    userKey: username
+    passwordKey: password
+
+  plugins:
+    - grafana-image-renderer
+```
+
+#### 3. Install Prometheus Stack
+
+```bash
+helm install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  -f monitoring/values.yaml
+```
+
+#### 4. Deploy ServiceMonitors
+
+Create `monitoring/servicemonitor-aux.yaml`:
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: aux-service-healthcheck
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: aux-service
+  namespaceSelector:
+    matchNames:
+    - aux-service
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+```
+
+Create `monitoring/servicemonitor-main.yaml`:
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: main-api-healthcheck
+  namespace: monitoring
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: main-api
+  namespaceSelector:
+    matchNames:
+    - main-api
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+```
+
+#### 5. Deploy via Argo CD
+
+Create an Argo CD Application for monitoring:
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kantox-monitoring
+  namespace: argocd
+spec:
+  project: default
+  
+  source:
+    repoURL: https://github.com/soulaymanebe/Kantox-Cloud-Engineer-Challenge.git
+    targetRevision: HEAD
+    path: monitoring/
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+```
+
+### Access Monitoring Tools
+
+#### Prometheus UI
+
+**URL:** `http://<node-ip>:31000`
+
+**Key Features:**
+- View active targets and scrape status
+- Check service discovery
+
+**Verify Targets:**
+
+Navigate to Status → Targets to confirm both services are being scraped successfully.
+
+#### Grafana Dashboard
+
+**URL:** `http://<node-ip>:30000`
+
+**Credentials:**
+- **Username:** `admin`
+- **Password:** The password you set in step 2
+
+### Dashboard Features
+
+The custom Grafana dashboard provides comprehensive monitoring:
+
+#### Service Health Panels
+
+| Panel                      | Description                                      |
+|----------------------------|--------------------------------------------------|
+| Aux Service Health         | Real-time UP/DOWN status indicator               |
+| Main API Health            | Real-time UP/DOWN status indicator               |
+| Service Details            | Endpoint, pod, and namespace information         |
+
+#### Performance Metrics
+
+| Panel                      | Metric                                           |
+|----------------------------|--------------------------------------------------|
+| Scrape Duration            | Response time for /metrics endpoint              |
+| Service Availability       | Historical uptime timeline                       |
+| Last Scrape Time           | Seconds since last successful scrape             |
+
+#### Infrastructure Monitoring
+
+| Panel                      | Description                                      |
+|----------------------------|--------------------------------------------------|
+| Pod to Node Mapping        | Shows which pods run on which nodes              |
+
+### Monitoring Metrics Exposed
+
+Both services expose Prometheus metrics at `/metrics`:
+
+**Available Metrics:**
+- `up` – Service availability (1=up, 0=down)
+- `scrape_duration_seconds` – Time taken to scrape metrics
+- `process_cpu_seconds_total` – CPU usage
+- `process_resident_memory_bytes` – Memory consumption
+- Flask-specific metrics (request counts, response times)
+
+---
+
 ## Additional Notes
 
 ### Port Mappings
@@ -351,6 +570,8 @@ curl http://<node-ip>:30002/param/challenge/kantox
 |---------------|---------------|----------|----------------------|
 | `aux-service` | 5000          | 30001    | AWS resource queries |
 | `main-api`    | 6000          | 30002    | Aggregation layer    |
+| `prometheus`  | 9090          | 31000    | Metrics collection   |
+| `grafana`     | 3000          | 30000    | Dashboard UI         |
 
 ## Acknowledgments
 
@@ -358,9 +579,8 @@ curl http://<node-ip>:30002/param/challenge/kantox
 - **Argo CD** for GitOps automation
 - **k3s** for lightweight Kubernetes
 - **AWS** for cloud infrastructure
+- **Prometheus & Grafana** for observability
 
 ---
 
-## Monitoring
-
-
+**Project Repository:** [Kantox Cloud Engineer Challenge](https://github.com/soulaymanebe/Kantox-Cloud-Engineer-Challen
