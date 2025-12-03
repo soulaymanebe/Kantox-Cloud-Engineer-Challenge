@@ -179,13 +179,13 @@ Navigate to `https://<node-ip>:<nodeport>` in your browser.
 ### Deploy Application
 
 Connect argocd with my github account using a personal access tocken (using the argocd UI).
-Create an Argo CD Application resource:
+Create 2 Argo CD Application resources:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: kantox-challenge-app
+  name: main-api
   namespace: argocd
 spec:
   project: default
@@ -193,11 +193,35 @@ spec:
   source:
     repoURL: https://github.com/soulaymanebe/Kantox-Cloud-Engineer-Challenge.git
     targetRevision: HEAD
-    path: kubernetes/
+    path: kubernetes/main-api
   
   destination:
     server: https://kubernetes.default.svc
-    namespace: default
+    namespace: main-api
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+```
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aux-service
+  namespace: argocd
+spec:
+  project: default
+  
+  source:
+    repoURL: https://github.com/soulaymanebe/Kantox-Cloud-Engineer-Challenge.git
+    targetRevision: HEAD
+    path: kubernetes/aux-service
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aux-service
   
   syncPolicy:
     automated:

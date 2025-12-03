@@ -16,3 +16,22 @@ spec:
   - port: http
     path: /metrics
     interval: 15s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: main-api-healthcheck
+  namespace: monitoring 
+  labels:
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: main-api
+  namespaceSelector:
+    matchNames:
+    - main-api
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
