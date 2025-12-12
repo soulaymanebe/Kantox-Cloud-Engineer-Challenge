@@ -10,11 +10,10 @@ metadata:
     prometheus.io/port: "5000"
     prometheus.io/path: "/metrics"
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: aux-service
   ports:
   - name: http
     port: 5000
     targetPort: 5000
-    nodePort: 30001

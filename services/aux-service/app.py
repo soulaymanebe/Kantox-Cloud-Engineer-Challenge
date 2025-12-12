@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, Response
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry, multiprocess
-import boto3
-import os
+import boto3, os
 
 VERSION = os.environ.get("AUX_VERSION", "0.0.1")
 REGION = os.environ.get("AWS_REGION", "eu-west-2")

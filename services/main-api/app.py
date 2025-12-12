@@ -1,7 +1,6 @@
 from flask import Flask, jsonify,Response
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry, multiprocess
-import requests
-import os
+import requests, os
 
 VERSION = os.environ.get("MAIN_VERSION", "0.0.1")
 AUX_URL = os.environ.get("AUX_URL", "http://aux-service.aux-service.svc.clusterequest.local:5000")
