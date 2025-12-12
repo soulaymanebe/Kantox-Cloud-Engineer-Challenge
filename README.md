@@ -260,12 +260,12 @@ aux-service-xxx  1/1     Running   0          2m
 
 ### Aux Service Endpoints
 
-**Base URL:** `http://<node-ip>:30001`
+**Base URL:** `http://<node-ip>/aux-service`
 
 #### List All S3 Buckets
 
 ```bash
-curl http://<node-ip>:30001/buckets
+curl http://<node-ip>/aux-service/buckets
 ```
 
 **Response:**
@@ -281,7 +281,7 @@ curl http://<node-ip>:30001/buckets
 #### List All SSM Parameters
 
 ```bash
-curl http://<node-ip>:30001/params
+curl http://<node-ip>/aux-service/params
 ```
 
 **Response:**
@@ -297,7 +297,7 @@ curl http://<node-ip>:30001/params
 #### Get Specific Parameter
 
 ```bash
-curl http://<node-ip>:30001/param/challenge/kantox
+curl http://<node-ip>/aux-service/param/challenge/kantox
 ```
 
 **Response:**
@@ -312,14 +312,14 @@ curl http://<node-ip>:30001/param/challenge/kantox
 
 ### Main API Endpoints
 
-**Base URL:** `http://<node-ip>:30002`
+**Base URL:** `http://<node-ip>/main-api`
 
 The Main API aggregates responses from the Aux Service and includes version information from both services.
 
 #### List All Buckets (Aggregated)
 
 ```bash
-curl http://<node-ip>:30002/buckets
+curl http://<node-ip>/main-api/buckets
 ```
 
 **Response:**
@@ -336,7 +336,7 @@ curl http://<node-ip>:30002/buckets
 #### List All Parameters (Aggregated)
 
 ```bash
-curl http://<node-ip>:30002/params
+curl http://<node-ip>/main-api/params
 ```
 
 **Response:**
@@ -353,7 +353,7 @@ curl http://<node-ip>:30002/params
 #### Get Specific Parameter (Aggregated)
 
 ```bash
-curl http://<node-ip>:30002/param/challenge/kantox
+curl http://<node-ip>/main-api/param/challenge/kantox
 ```
 
 **Response:**
@@ -382,14 +382,14 @@ The monitoring stack uses Prometheus for metrics collection and Grafana for visu
 │   • Exposed on NodePort 31000                    │
 └────────────────┬─────────────────────────────────┘
                  │
-         ┌───────┴────────┐
-         │                │
-    ┌────▼─────┐    ┌────▼──────┐
-    │main-api  │    │aux-service│
-    │ :30002   │    │  :30001   │
-    └──────────┘    └───────────┘
-                 │
-                 ▼
+         ┌───────┴───────────┐
+         │                   │
+    ┌────▼──────┐    ┌───────▼──────┐
+    │ /main-api │    │ /aux-service │
+    └───────────┘    └──────────────┘
+         └───────────────────┘
+                   │
+                   ▼
 ┌──────────────────────────────────────────────────┐
 │               Grafana                            │
 │         (Visualization)                          │
@@ -572,6 +572,8 @@ The custom Grafana dashboard provides comprehensive monitoring:
 | Panel                      | Description                                      |
 |----------------------------|--------------------------------------------------|
 | Pod to Node Mapping        | Shows which pods run on which nodes              |
+| Container CPU Usage        | CPU usage per container in mCPU                  |
+| Container Memory Usage     | Memory consumption per container in MB           |
 
 ### Monitoring Metrics Exposed
 
@@ -590,12 +592,12 @@ Both services expose Prometheus metrics at `/metrics`:
 
 ### Port Mappings
 
-| Service       | Internal Port | NodePort | Purpose              |
-|---------------|---------------|----------|----------------------|
-| `aux-service` | 5000          | 30001    | AWS resource queries |
-| `main-api`    | 6000          | 30002    | Aggregation layer    |
-| `prometheus`  | 9090          | 31000    | Metrics collection   |
-| `grafana`     | 3000          | 30000    | Dashboard UI         |
+| Service       | Internal Port | NodePort | Purpose              | Ingress Path |
+|---------------|---------------|----------|----------------------|--------------|
+| `aux-service` | 5000          |  --      | AWS resource queries | /aux-service |
+| `main-api`    | 6000          |  --      | Aggregation layer    | /main-api    |
+| `prometheus`  | 9090          | 31000    | Metrics collection   |   --         |
+| `grafana`     | 3000          | 30000    | Dashboard UI         |   --         |
 
 ## Acknowledgments
 
@@ -607,4 +609,4 @@ Both services expose Prometheus metrics at `/metrics`:
 
 ---
 
-**Project Repository:** [Kantox Cloud Engineer Challenge](https://github.com/soulaymanebe/Kantox-Cloud-Engineer-Challen
+**Project Repository:** [Kantox Cloud Engineer Challenge](https://github.com/soulaymanebe/Kantox-Cloud-Engineer-Challenge.git)

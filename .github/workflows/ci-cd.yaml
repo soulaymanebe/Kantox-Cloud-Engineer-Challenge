@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - services/**
+      - "services/**"
 
 jobs:
 
@@ -80,6 +80,8 @@ jobs:
         sed -i "s#image: .*main-api.*#image: ${{ secrets.AWS_ECR_URI }}:main-api-$SHA#g" kubernetes/main-api/deployment.yaml
 
     - name: Commit manifest updates
+      env:
+        SHA: ${{ needs.build-and-push.outputs.sha }}
       run: |
         git config user.name "github-actions"
         git config user.email "github-actions@github.com"
@@ -88,6 +90,6 @@ jobs:
           echo "No changes to commit"
         else
           git add kubernetes/aux-service/deployment.yaml kubernetes/main-api/deployment.yaml
-          git commit -m "Update image tags to SHA ${{ steps.vars.outputs.sha }}"
+          git commit -m "Update image tags to SHA $SHA"
           git push
         fi

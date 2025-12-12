@@ -4,7 +4,7 @@ metadata:
   name: aux-service
   namespace: aux-service
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: aux-service

@@ -1,10 +1,10 @@
 from flask import Flask, jsonify, Response
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST, CollectorRegistry, multiprocess
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 import boto3
 import os
 
-VERSION = os.environ.get("AUX_VERSION", "0.0.1")
-REGION = os.environ.get("AWS_REGION", "eu-west-2")
+VERSION = os.environ.get("AUX_VERSION")
+REGION = os.environ.get("AWS_REGION")
 
 app = Flask(__name__)
 s3 = boto3.client('s3')
